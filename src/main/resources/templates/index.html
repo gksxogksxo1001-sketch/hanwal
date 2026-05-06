@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한월(韓月) - 로그인</title>
+    <!-- Tailwind CSS (CDN for prototyping) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- 전용 CSS 추가 (이전 리팩토링에서 누락됨) -->
+    <link rel="stylesheet" href="../static/css/index.css" th:href="@{/css/index.css}">
+    
+    <!-- JS 연동 (Alpine 로직 분리) -->
+    <script defer src="../static/js/auth.js" th:src="@{/js/auth.js}"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="min-h-screen relative flex items-center justify-center p-4 overflow-hidden" 
+      x-data="authApp()">
+
+    <!-- 고퀄리티 무협 배경 및 오버레이 -->
+    <div class="bg-wuxia"></div>
+    <div class="fog-overlay"></div>
+    
+    <!-- 기(氣) 파티클 이펙트 -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+
+    <!-- ===== [1] 메인 로그인 화면 ===== -->
+    <div x-show="currentView === 'login'" x-transition 
+         class="glass-panel relative z-10 w-full max-w-sm rounded-[32px] p-8 sm:p-10 flex flex-col items-center">
+        
+        <!-- 게임 로고 영역 -->
+        <div class="text-center mb-6">
+            <!-- pr-2 등 Tailwind로 간격 조정, 인라인 style 제거 -->
+            <h1 class="font-myeongjo text-6xl md:text-7xl font-black tracking-widest text-gold-gradient drop-shadow-2xl mb-2 pr-2">
+                한월
+            </h1>
+            <h2 class="font-myeongjo text-xl tracking-[0.3em] text-gray-300 drop-shadow-md mb-4 ml-2">
+                HANWOL
+            </h2>
+            <div class="inline-flex items-center space-x-2 bg-black/60 border border-yellow-600/30 rounded-full px-5 py-1.5 shadow-inner">
+                <i data-lucide="swords" class="w-4 h-4 text-amber-500"></i>
+                <span class="text-sm font-semibold tracking-wider text-amber-100">동양 판타지 턴제 RPG</span>
+            </div>
+        </div>
+
+        <!-- 텍스트 장식선 -->
+        <div class="w-full flex items-center justify-center space-x-3 mb-8 opacity-70">
+            <div class="h-[1px] w-12 bg-gradient-to-r from-transparent to-amber-500/50"></div>
+            <i data-lucide="moon-star" class="w-4 h-4 text-amber-500"></i>
+            <div class="h-[1px] w-12 bg-gradient-to-l from-transparent to-amber-500/50"></div>
+        </div>
+
+        <!-- 로그인 폼 -->
+        <form @submit.prevent="login" class="w-full space-y-5">
+            <div>
+                <div class="relative group">
+                    <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-amber-500 transition-colors"></i>
+                    <input type="email" x-model="loginForm.email" placeholder="이메일 (계정명)" required
+                        class="dark-input w-full rounded-2xl py-4 pl-12 pr-4 text-sm placeholder-gray-500 tracking-wide">
+                </div>
+            </div>
+            <div>
+                <div class="relative group">
+                    <i data-lucide="key-round" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-amber-500 transition-colors"></i>
+                    <input type="password" x-model="loginForm.password" placeholder="비밀번호" required
+                        class="dark-input w-full rounded-2xl py-4 pl-12 pr-4 text-sm placeholder-gray-500 tracking-wide">
+                </div>
+            </div>
+            
+            <!-- 로그인 알림 메시지 -->
+            <p x-show="errorMessage" x-text="errorMessage" class="text-red-400 text-sm text-center"></p>
+
+            <button type="submit" class="btn-primary w-full rounded-2xl py-4 mt-4 text-lg shadow-xl cursor-pointer flex items-center justify-center space-x-2 relative group overflow-hidden"
+                    :disabled="isLoading">
+                <span x-text="isLoading ? '접속 중...' : '강호 진입'" class="relative z-10 tracking-widest font-myeongjo"></span>
+            </button>
+        </form>
+
+        <!-- 회원가입/비번찾기 연동 영역 -->
+        <div class="w-full pt-6 mt-6 border-t border-amber-900/30 flex flex-col space-y-3">
+            <button @click="currentView = 'register'; errorMessage=''" type="button" class="btn-secondary w-full rounded-2xl py-3.5 text-sm flex items-center justify-center space-x-2 font-medium tracking-wide">
+                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                <span>새로운 모험가 (무림 출사)</span>
+            </button>
+            <button @click="currentView = 'findPw'; errorMessage=''" type="button" class="text-center text-xs text-gray-500 hover:text-gray-300 transition-colors">
+                비밀번호를 잊으셨나요?
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== [2] 회원가입 모달 ===== -->
+    <div x-show="currentView === 'register'" x-transition x-cloak
+         class="glass-panel relative z-10 w-full max-w-sm rounded-[32px] p-8 sm:p-10 flex flex-col items-center">
+        <h2 class="font-myeongjo text-3xl font-bold text-amber-500 mb-6 drop-shadow-md">무림 출사</h2>
+        
+        <form @submit.prevent="register" class="w-full space-y-4">
+            
+            <!-- 이메일 및 인증 -->
+            <div class="flex space-x-2">
+                <input type="email" x-model="registerForm.email" placeholder="이메일" required :disabled="isVerified || codeSent"
+                    class="dark-input w-full rounded-xl py-3 px-4 text-sm disabled:opacity-50">
+                <button type="button" @click="sendCode" :disabled="!registerForm.email || isVerified || codeSent"
+                        class="btn-secondary whitespace-nowrap px-4 rounded-xl text-xs disabled:opacity-50">
+                    인증 발송
+                </button>
+            </div>
+
+            <!-- 인증번호 입력 칸 -->
+            <div x-show="codeSent && !isVerified" class="flex space-x-2 transition-all">
+                <input type="text" x-model="registerForm.code" placeholder="인증번호 6자리" required maxlength="6"
+                    class="dark-input w-full rounded-xl py-3 px-4 text-sm">
+                <button type="button" @click="verifyCode"
+                        class="btn-primary whitespace-nowrap px-4 rounded-xl text-xs font-bold">
+                    확인
+                </button>
+            </div>
+            <p x-show="isVerified" class="text-emerald-400 text-xs mt-1 ml-1 flex items-center">
+                <i data-lucide="check-circle-2" class="w-3 h-3 mr-1"></i> 이메일 인증이 완료되었습니다.
+            </p>
+
+            <!-- 닉네임 입력 -->
+            <div>
+                <input type="text" x-model="registerForm.nickname" placeholder="강호에서 사용할 별호(닉네임)" required minlength="2" maxlength="12"
+                    class="dark-input w-full rounded-xl py-3 px-4 text-sm">
+            </div>
+            
+            <!-- 비밀번호 (정규식 검증 힌트 제공) -->
+            <div>
+                <input type="password" x-model="registerForm.password" placeholder="비밀번호" required minlength="8"
+                    class="dark-input w-full rounded-xl py-3 px-4 text-sm">
+                <p class="text-xs mt-1 ml-1" :class="isPasswordValid ? 'text-emerald-400' : 'text-gray-500'">
+                    * 8자 이상, 특수문자 최소 1개 포함
+                </p>
+            </div>
+
+            <!-- 비밀번호 확인 -->
+            <div>
+                <input type="password" x-model="registerForm.passwordConfirm" placeholder="비밀번호 확인" required minlength="8"
+                    class="dark-input w-full rounded-xl py-3 px-4 text-sm"
+                    :class="passwordMatchError ? 'border-red-500' : ''">
+                <p x-show="passwordMatchError" class="text-red-400 text-xs mt-1 ml-1">비밀번호가 일치하지 않습니다.</p>
+            </div>
+
+            <p x-show="errorMessage" x-text="errorMessage" class="text-red-400 text-sm text-center"></p>
+            <p x-show="successMessage" x-text="successMessage" class="text-emerald-400 text-sm text-center"></p>
+
+            <button type="submit" class="btn-primary w-full rounded-xl py-3.5 mt-2" 
+                    :disabled="isLoading || !isVerified || !isPasswordValid || passwordMatchError">
+                <span x-text="isLoading ? '등록 중...' : '가입 완료'"></span>
+            </button>
+            <button @click="resetRegisterView" type="button" class="btn-secondary w-full rounded-xl py-3 text-sm mt-3">
+                뒤로가기
+            </button>
+        </form>
+    </div>
+
+    <!-- ===== [3] 성별(캐릭터) 선택 모달 (로그인 후) ===== -->
+    <div x-show="currentView === 'genderSelect'" x-transition x-cloak
+         class="glass-panel relative z-10 w-full max-w-md rounded-[32px] p-8 sm:p-10 flex flex-col items-center border-[3px] border-amber-500/50">
+        <h2 class="font-myeongjo text-2xl font-bold text-amber-300 mb-2">당신은 남궁세가의...</h2>
+        <p class="text-gray-400 text-xs mb-6 text-center">선택한 성별에 따라 사용 무공(⚡뇌전/💧빙공)이 달라집니다.<br><span class="text-red-400 font-bold">선택 후에는 변경할 수 없습니다.</span></p>
+
+        <div class="flex space-x-4 w-full mb-6">
+            <button @click="selectedGender = 'MALE'" type="button" 
+                    :class="selectedGender === 'MALE' ? 'border-amber-500 bg-amber-900/30 shadow-[0_0_15px_rgba(245,158,11,0.5)]' : 'border-gray-600 bg-black/40'"
+                    class="flex-1 rounded-2xl border-2 p-4 transition-all text-center hover:bg-amber-900/20">
+                <i data-lucide="zap" class="w-8 h-8 mx-auto text-yellow-400 mb-2"></i>
+                <div class="font-bold text-lg text-gray-200">막내 아들</div>
+                <div class="text-xs text-yellow-400 mt-1">⚡ 가전무공 (뇌전)</div>
+            </button>
+            <button @click="selectedGender = 'FEMALE'" type="button" 
+                    :class="selectedGender === 'FEMALE' ? 'border-blue-500 bg-blue-900/30 shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'border-gray-600 bg-black/40'"
+                    class="flex-1 rounded-2xl border-2 p-4 transition-all text-center hover:bg-blue-900/20">
+                <i data-lucide="droplets" class="w-8 h-8 mx-auto text-blue-400 mb-2"></i>
+                <div class="font-bold text-lg text-gray-200">막내 딸</div>
+                <div class="text-xs text-blue-400 mt-1">💧 타파무공 (빙공)</div>
+            </button>
+        </div>
+
+        <button @click="submitGender" type="button" :disabled="!selectedGender || isLoading"
+                class="btn-primary w-full rounded-xl py-4 text-base disabled:opacity-50 disabled:cursor-not-allowed">
+            운명을 받아들인다
+        </button>
+    </div>
+
+    <!-- ===== [4] 비밀번호 찾기 모달 ===== -->
+    <div x-show="currentView === 'findPw'" x-transition x-cloak
+         class="glass-panel relative z-10 w-full max-w-sm rounded-[32px] p-8 sm:p-10 flex flex-col items-center">
+        <h2 class="font-myeongjo text-2xl font-bold text-amber-500 mb-6 drop-shadow-md">비밀번호 찾기</h2>
+        
+        <form @submit.prevent="findPassword" class="w-full space-y-4">
+            <div>
+                <input type="email" x-model="findPwForm.email" placeholder="가입한 이메일" required
+                    class="dark-input w-full rounded-xl py-3 px-4 text-sm">
+            </div>
+            <div>
+                <input type="text" x-model="findPwForm.nickname" placeholder="별호(닉네임)" required
+                    class="dark-input w-full rounded-xl py-3 px-4 text-sm">
+            </div>
+
+            <p x-show="errorMessage" x-text="errorMessage" class="text-red-400 text-sm text-center"></p>
+
+            <button type="submit" class="btn-primary w-full rounded-xl py-3.5 mt-2" :disabled="isLoading">
+                임시 비밀번호 발급
+            </button>
+            <button @click="currentView = 'login'; errorMessage=''" type="button" class="btn-secondary w-full rounded-xl py-3 text-sm mt-3">
+                돌아가기
+            </button>
+        </form>
+    </div>
+
+    <!-- 하단 카피라이트 -->
+    <div class="absolute bottom-4 text-center text-xs text-gray-600 tracking-widest w-full">
+        © 2026 Hanwol Project. All rights reserved.
+    </div>
+    
+    <!-- 초기 아이콘 렌더링을 위한 Fallback -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+    </script>
+</body>
+</html>
