@@ -2,17 +2,8 @@
 FROM eclipse-temurin:17-jdk-jammy AS build
 WORKDIR /app
 
-# 그래들 래퍼와 설정 파일들을 먼저 복사 (캐시 활용)
-COPY gradlew .
-COPY gradle gradle
-COPY build.gradle .
-COPY settings.gradle .
-
-# 종속성 미리 다운로드
-RUN ./gradlew dependencies --no-daemon
-
 # 소스 코드 복사 및 빌드
-COPY src src
+COPY . .
 RUN ./gradlew bootJar --no-daemon
 
 # 2단계: 실행 스테이지
