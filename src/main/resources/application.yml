@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: hanwol
+
+  # 데이터베이스 접속 설정 (Railway 환경변수 자동 대응)
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://${MYSQLHOST:localhost}:${MYSQLPORT:3306}/${MYSQLDATABASE:${MYSQL_DATABASE:hanwol}}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    username: ${SPRING_DATASOURCE_USERNAME:${MYSQLUSER:root}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${MYSQLPASSWORD:1234}}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # 초기 데이터베이스 프로비저닝 (data.sql 연동)
+  sql:
+    init:
+      mode: always
+
+  # JPA (Hibernate) 설정
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # 뷰 템플릿(Thymeleaf) 설정
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+
+  # 메일 발송 (Google Apps Script API) 설정 - 외부 환경변수 주입
+  mail:
+    script-url: ${GOOGLE_SCRIPT_MAIL_URL:}
+
+server:
+  port: ${PORT:8080}
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    com.hanwol: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

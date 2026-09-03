@@ -1,0 +1,150 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&display=swap');
+
+:root {
+    --color-bg-dark: #0a0b10;
+    --color-primary-glow: rgba(217, 119, 6, 0.4); /* 묵직한 호박/금색빛 */
+    --color-secondary-glow: rgba(59, 130, 246, 0.2); /* 은은한 푸른 기운 */
+}
+
+body {
+    font-family: 'Pretendard', sans-serif;
+    background-color: var(--color-bg-dark);
+    margin: 0;
+    overflow: hidden;
+    color: #e5e7eb;
+}
+
+/* 무협 붓글씨 느낌 폰트 */
+.font-myeongjo {
+    font-family: 'Noto Serif KR', serif;
+}
+
+/* 배경 이미지 연출 (생성한 3D 아트) */
+.bg-wuxia {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background-image: url('../images/bg_main.png');
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    filter: brightness(0.7) contrast(1.1);
+    transform: scale(1.05); /* 약간 확대해서 애니메이션의 여유 공간 확보 */
+    animation: panBackground 60s ease-in-out infinite alternate;
+}
+
+@keyframes panBackground {
+    0% { transform: scale(1.05) translate(0, 0); }
+    100% { transform: scale(1.1) translate(-2%, 2%); }
+}
+
+/* 어두운 안개 오버레이 */
+.fog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background: linear-gradient(to top, rgba(10, 11, 16, 1) 0%, rgba(10, 11, 16, 0.4) 50%, rgba(10, 11, 16, 0.8) 100%);
+    pointer-events: none;
+}
+
+/* 기(氣) 입자 파티클 */
+.particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: #fbbf24;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #fbbf24, 0 0 15px #f59e0b;
+    animation: floatUp 8s infinite ease-in;
+    opacity: 0;
+}
+
+.particle:nth-child(1) { left: 15%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 35%; animation-delay: 2.5s; }
+.particle:nth-child(3) { left: 65%; animation-delay: 5s; width: 4px; height: 4px; }
+.particle:nth-child(4) { left: 80%; animation-delay: 1.5s; background: #60a5fa; box-shadow: 0 0 8px #60a5fa; }
+.particle:nth-child(5) { left: 90%; animation-delay: 4s; }
+.particle:nth-child(6) { left: 25%; animation-delay: 6s; }
+
+@keyframes floatUp {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    30% { opacity: 0.6; }
+    80% { opacity: 0.2; }
+    100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+}
+
+/* 글래스모피즘 동양풍 테두리 패널 */
+.glass-panel {
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(251, 191, 36, 0.2); /* 금색 테두리 */
+    border-top: 2px solid rgba(251, 191, 36, 0.4); /* 지붕 느낌의 강조 */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(251, 191, 36, 0.05);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+    box-shadow: 0 30px 60px -15px rgba(251, 191, 36, 0.15), inset 0 0 30px rgba(251, 191, 36, 0.1);
+}
+
+/* 붓글씨 타이틀 황금빛 */
+.text-gold-gradient {
+    color: #fbbf24;
+    text-shadow: 0 0 20px rgba(217, 119, 6, 0.8), 0 0 40px rgba(217, 119, 6, 0.4), 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+/* 입력 필드 (동양 문창살 느낌의 어두운 배색) */
+.dark-input {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+    transition: all 0.3s;
+}
+
+.dark-input:focus {
+    outline: none;
+    background: rgba(0, 0, 0, 0.6);
+    border-color: #fbbf24;
+    box-shadow: 0 0 15px rgba(217, 119, 6, 0.4);
+}
+
+/* 메인 버튼 (호박석/금속 느낌) */
+.btn-primary {
+    background: linear-gradient(to bottom, #d97706, #92400e);
+    border: 1px solid #f59e0b;
+    box-shadow: 0 4px 15px rgba(146, 64, 14, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font-weight: 700;
+    transition: all 0.2s;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(to bottom, #f59e0b, #b45309);
+    box-shadow: 0 6px 20px rgba(217, 119, 6, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* 서브 버튼 */
+.btn-secondary {
+    background: transparent;
+    color: #9ca3af;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.2s;
+}
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.05);
+    color: #fbbf24;
+    border-color: rgba(251, 191, 36, 0.4);
+}

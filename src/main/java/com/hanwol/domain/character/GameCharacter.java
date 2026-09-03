@@ -1,0 +1,165 @@
+package com.hanwol.domain.character;
+
+import com.hanwol.domain.enums.Element;
+import com.hanwol.domain.enums.GrowthGrade;
+import com.hanwol.domain.enums.Rarity;
+import com.hanwol.domain.enums.RouteType;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 캐릭터 마스터 데이터 (템플릿)
+ * 모든 캐릭터의 기본 스탯과 성장 정보를 관리
+ */
+@Entity
+@Table(name = "characters")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class GameCharacter {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String name;
+
+    @Column(unique = true, length = 50)
+    private String code; // 예: "CH_NAMGUNG_CHUN"
+
+    @Column(length = 200)
+    private String title; // 별호
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private Element element;
+
+    @Column(nullable = false, length = 50)
+    private String role; // 포지션 (딜탱, 디버퍼, 속도딜러 등)
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    private RouteType routeType; // null이면 공용
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 5)
+    private Rarity rarity = Rarity.C; // 캐릭터 등급 (S, A, B, C)
+
+    @Column(nullable = false)
+    private boolean isGachaTarget = true; // 가챠 획득 가능 여부 (남궁천 등 스토리 캐릭은 false)
+
+    // --- 기본 스탯 (Lv.1) ---
+    @Column(nullable = false)
+    private int baseHp;
+
+    @Column(nullable = false)
+    private int baseAtk;
+
+    @Column(nullable = false)
+    private int baseDef;
+
+    @Column(nullable = false)
+    private int baseSpd;
+
+    @Column(nullable = false, precision = 5, scale = 2)
+    private BigDecimal baseCritRate = new BigDecimal("5.00");
+
+    @Column(nullable = false, precision = 5, scale = 2)
+    private BigDecimal baseCritDmg = new BigDecimal("150.00");
+
+    @Column(nullable = false, precision = 5, scale = 2)
+    private BigDecimal baseEffectHitRate = BigDecimal.ZERO;
+
+    @Column(nullable = false, precision = 5, scale = 2)
+    private BigDecimal baseEffectResist = BigDecimal.ZERO;
+
+    // --- 성장 등급 ---
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 5)
+    private GrowthGrade hpGrowth;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 5)
+    private GrowthGrade atkGrowth;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 5)
+    private GrowthGrade defGrowth;
+
+    @Column(nullable = false, precision = 4, scale = 2)
+    private BigDecimal spdGrowthPerLevel = new BigDecimal("0.20");
+
+    @Column(nullable = false, precision = 4, scale = 2)
+    private BigDecimal ehrGrowthPerLevel = new BigDecimal("0.10");
+
+    // --- 투기 보너스 ---
+    @Column(length = 100)
+    private String spiritBonusCondition; // 예: "ON_HIT", "ON_DEBUFF_LAND", "ON_CRIT"
+
+    @Column(nullable = false)
+    private int spiritBonusAmount = 0;
+
+    // --- 설명 ---
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(columnDefinition = "TEXT")
+    private String lore;
+
+    @Column(length = 200)
+    private String imagePath;
+
+    // --- 신상 정보 ---
+    @Column(length = 50)
+    private String family; // 소속 세가 (예: "남궁세가", "하북팽가")
+
+    @Column
+    private Integer age; // 나이
+
+    @Column(length = 10)
+    private String gender; // 성별 ("남", "여")
+
+    @Column(length = 100)
+    private String personality; // 성격 (예: "냉철함", "호방함")
+
+    @Column(columnDefinition = "TEXT")
+    private String relationships; // 관계도 (예: "남궁설화의 오라버니")
+
+    // --- 연관관계 ---
+    @OneToMany(mappedBy = "character", fetch = FetchType.LAZY)
+    private List<CharacterSkill> characterSkills = new ArrayList<>();
+
+    /**
+     * 특정 레벨에서의 HP 계산
+     */
+    public int calcHpAtLevel(int level) {
+        return hpGrowth.calcStatAtLevel(baseHp, level);
+    }
+
+    /**
+     * 특정 레벨에서의 ATK 계산
+     */
+    public int calcAtkAtLevel(int level) {
+        return atkGrowth.calcStatAtLevel(baseAtk, level);
+    }
+
+    /**
+     * 특정 레벨에서의 DEF 계산
+     */
+    public int calcDefAtLevel(int level) {
+        return defGrowth.calcStatAtLevel(baseDef, level);
+    }
+
+    /**
+     * 특정 레벨에서의 SPD 계산
+     */
+    public int calcSpdAtLevel(int level) {
+        return (int) Math.round(baseSpd + spdGrowthPerLevel.doubleValue() * (level - 1));
+    }
+}
